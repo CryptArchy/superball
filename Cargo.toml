@@ -1,0 +1,11 @@
+[package]
+name = "superball"
+version = "0.1.0"
+authors = ["CryptArchy <CodexArcanum@gmail.com>"]
+publish = false
+
+[dependencies]
+version = "2.0"
+log = "0.3"
+log4rs = { version = "0.4", features = ["toml"] }
+iron = "0.3"

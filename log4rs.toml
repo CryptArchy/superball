@@ -1,0 +1,30 @@
+refresh_rate = 30
+
+[appenders.stdout]
+kind = "console"
+# default pattern = "{d} {l} {t} - {m}{n}"
+encoder = { pattern = "{d(%Y-%m-%d %H:%M:%S%.6f)(local)} {h({l:<5})} {t} - {m}{n}" }
+
+[appenders.modules]
+kind = "file"
+path = "logs/modules.log"
+# date level target (module in file at line on thread) - message<newline>
+encoder = { pattern = "{d} {l:<5} {t} (({M} in {f} at {L} on {T})) - {m}{n}" }
+
+[[appenders.modules.filters]]
+kind = "threshold"
+level = "off"
+
+[root]
+level = "trace"
+appenders = ["stdout"]
+
+[loggers."hyper"]
+level = "warn"
+appenders = ["modules"]
+additive = false
+
+[loggers."mime"]
+level = "warn"
+appenders = ["modules"]
+additive = false
