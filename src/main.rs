@@ -4,28 +4,36 @@ extern crate version;
 extern crate log;
 extern crate log4rs;
 extern crate iron;
+extern crate router;
 
 use iron::prelude::*;
 use iron::status;
-
-mod router;
+use router::Router;
 
 fn main() {
     log4rs::init_file("log4rs.toml", Default::default()).unwrap();
     let ver: version::Version = std::str::FromStr::from_str(version!()).unwrap();
     println!("Superball v{}", ver);
 
-    let mut rtr = router::Router::new();
+    let mut router = Router::new();
+    router.get("/", home_handler);
+    router.get("/:query", echo_handler);
+    router.get("/bounce", bounce_handler);
 
-    rtr.add_route("".to_string(), |_: &mut Request| {
+    fn home_handler(_: &mut Request) -> IronResult<Response> {
         Ok(Response::with((status::Ok, "Welcome to Superball Bounce Server!")))
-    });
+    }
 
-    rtr.add_route("bounce".to_string(), |_: &mut Request| {
+    fn bounce_handler(_: &mut Request) -> IronResult<Response> {
         Ok(Response::with((status::Ok, "Bounce!")))
-    });
+    }
 
-    Iron::new(rtr).http("localhost:3030").unwrap();
+    fn echo_handler(req: &mut Request) -> IronResult<Response> {
+        let ref query = req.extensions.get::<Router>().unwrap().find("query").unwrap_or("/");
+        Ok(Response::with((status::Ok, *query)))
+    }
+
+    Iron::new(router).http("localhost:3030").unwrap();
 }
 
 #[cfg(test)]
