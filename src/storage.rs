@@ -4,6 +4,10 @@ use std::path::Path;
 use time::Timespec;
 use rusqlite::Connection;
 
+const CREATE_TBL_KEYVALUE: &'static str = include_str!("sql/create_keyvalue.sql");
+const SET_KEYVALUE: &'static str = include_str!("sql/set_keyvalue.sql");
+const GET_KEYVALUE: &'static str = include_str!("sql/select_keyvalue_by_key.sql");
+
 #[derive(Debug)]
 pub struct KeyValue {
     pub id: i32,
@@ -21,13 +25,7 @@ impl Storage {
         let db_path = Path::new(db_name);
         let db = Connection::open(db_path).unwrap();
 
-        let sql_create_tbl = r"CREATE TABLE keyvalue (
-            id           INTEGER PRIMARY KEY,
-            key          TEXT NOT NULL,
-            value        TEXT NOT NULL,
-            dt_created   TEXT NOT NULL )";
-
-        db.execute(sql_create_tbl, &[])
+        db.execute(CREATE_TBL_KEYVALUE, &[])
             .unwrap();
 
         Storage { db: db }
@@ -35,9 +33,7 @@ impl Storage {
 
     pub fn get(&self, key: String) -> KeyValue {
         self.db
-            .query_row("SELECT id, key, value, dt_created FROM keyvalue WHERE key=$1",
-                       &[&key],
-                       |row| {
+            .query_row(GET_KEYVALUE, &[&key], |row| {
                 KeyValue {
                     id: row.get(0),
                     key: row.get(1),
@@ -50,8 +46,7 @@ impl Storage {
 
     pub fn set(&self, kv: &KeyValue) {
         self.db
-            .execute("INSERT INTO keyvalue (key, value, dt_created) VALUES ($1, $2, $3)",
-                     &[&kv.key, &kv.value, &kv.dt_created])
+            .execute(SET_KEYVALUE, &[&kv.key, &kv.value, &kv.dt_created])
             .unwrap();
     }
 }
