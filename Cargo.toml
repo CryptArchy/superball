@@ -10,3 +10,5 @@ log = "0.3"
 log4rs = { version = "0.4", features = ["toml"] }
 iron = "0.3"
 router = "0.1"
+urlencoded = "0.3.0"
+rusqlite = "0.7.3"
