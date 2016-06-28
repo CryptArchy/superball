@@ -37,15 +37,15 @@ mod tests {
         // Don't do it this way, the urlencoded crate basically does this for you.
         let init_url = Url::parse("http://wwww.google.com?id=1&name=foo").unwrap();
         let ref raw_query = init_url.query.unwrap();
-        let qparts : Vec<&str> = raw_query.split('&').collect();
+        let qparts: Vec<&str> = raw_query.split('&').collect();
 
         assert_eq!(qparts[0], "id=1");
         assert_eq!(qparts[1], "name=foo");
 
         let mut query = HashMap::new();
         for qp in qparts {
-            let kv : Vec<&str> = qp.split('=').collect();
-            query.insert(kv[0],kv[1]);
+            let kv: Vec<&str> = qp.split('=').collect();
+            query.insert(kv[0], kv[1]);
         }
 
         assert_eq!(query["id"], "1");
