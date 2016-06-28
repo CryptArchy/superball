@@ -35,15 +35,16 @@ impl Storage {
         self.db
             .query_row(GET_KEYVALUE, &[&key], |row| {
                 KeyValue {
-                    id: row.get(0),
-                    key: row.get(1),
-                    value: row.get(2),
-                    dt_created: row.get(3),
+                    id: row.get("id"),
+                    key: row.get("key"),
+                    value: row.get("value"),
+                    dt_created: row.get("dt_created"),
                 }
             })
             .unwrap()
     }
 
+    // @todo: UPDATE still isn't working right, no idea why not!
     pub fn set(&self, kv: &KeyValue) {
         self.db
             .execute(SET_KEYVALUE, &[&kv.key, &kv.value, &kv.dt_created])
@@ -64,18 +65,62 @@ mod tests {
     fn read_and_write_to_disk() {
         fs::remove_file("test.db");
         let store = Storage::new("test.db");
-        let kv = KeyValue {
+        let kv1 = KeyValue {
             id: 0,
             key: "Testing".to_string(),
             value: "Testing".to_string(),
             dt_created: time::get_time(),
         };
-        store.set(&kv);
-        let kv2 = store.get("Testing".to_owned());
-        assert!(kv.id != kv2.id);
-        assert_eq!(kv.key, kv2.key);
-        assert_eq!(kv.value, kv2.value);
-        assert_eq!(kv.dt_created.sec, kv2.dt_created.sec);
+        let kv2 = KeyValue {
+            id: 0,
+            key: "Tested".to_string(),
+            value: "Rested".to_string(),
+            dt_created: time::get_time(),
+        };
+        store.set(&kv1);
+        store.set(&kv2);
+
+        let kv1_out = store.get("Testing".to_owned());
+        println!("{:?}", kv1_out);
+
+        assert!(kv1.id != kv1_out.id);
+        assert_eq!(kv1_out.id, 1);
+        assert_eq!(kv1.key, kv1_out.key);
+        assert_eq!(kv1.value, kv1_out.value);
+        assert_eq!(kv1.dt_created.sec, kv1_out.dt_created.sec);
+
+        let kv2_out = store.get("Tested".to_owned());
+        println!("{:?}", kv2_out);
+
+        assert!(kv2.id != kv2_out.id);
+        assert_eq!(kv2_out.id, 2);
+        assert_eq!(kv2.key, kv2_out.key);
+        assert_eq!(kv2.value, kv2_out.value);
+        assert_eq!(kv2.dt_created.sec, kv2_out.dt_created.sec);
+
+        assert!(kv1_out.id != kv2_out.id);
+        assert!(kv1_out.key != kv2_out.key);
+        assert!(kv1_out.value != kv2_out.value);
+
+        let kv1r =  KeyValue {
+            id: 1,
+            key: "Testing".to_string(),
+            value: "Resting".to_string(),
+            dt_created: time::get_time(),
+        };
+
+        store.set(&kv1r);
+        let kv1r_out = store.get("Testing".to_owned());
+        println!("{:?}", kv1r_out);
+
+        assert!(kv1r.id == kv1r_out.id, "Revised ID not transferred!");
+        assert!(kv1r.key == kv1r_out.key, "Revised Key not transferred!");
+        assert_eq!(kv1r.value, kv1r_out.value);
+        assert!(kv1r.value == kv1r_out.value, "Revised value not transferred!");
+        assert!(kv1.key == kv1r_out.key, "Revised key not same!");
+        assert!(kv1.value != kv1r_out.value, "Revised value was same!");
+        assert!(kv1r.dt_created.sec != kv1r_out.dt_created.sec, "Revised time was same!");
+
         fs::remove_file("test.db");
     }
 
