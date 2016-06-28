@@ -13,6 +13,15 @@ It exposes 3 endpoints:
 
 ## Building and Running
 
-1. `cargo run`
+`cargo run`
+
+## Contributing
+
+`rustfmt` is mandatory!
+
+```sh
+cargo install rustfmt
+cargo fmt
+```
 
 [rustup]: https://www.rustup.rs/
