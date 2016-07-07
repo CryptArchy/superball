@@ -15,7 +15,7 @@ pub fn bounce_handler(req: &mut Request) -> IronResult<Response> {
             .ok_or("missing url error".to_owned())
             // Found "url" now parse it as a Url
             .and_then(|url| Url::parse(url[0].as_str()))
-            // Redirect to the parsed Rrl
+            // Redirect to the parsed Url
             .and_then(|url| {
                 info!("Bounce to {:?}", url);
                 Ok(Response::with((status::Found, Redirect(url.clone()))))
