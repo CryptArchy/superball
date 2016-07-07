@@ -9,19 +9,54 @@ It exposes 3 endpoints:
 
 ## Requirements
 
-- Rust (Instructions coming soon! Hint: [rustup])
+- Rust
+  1. Download and install [rustup]
+  1. Follow instructions to set up the `stable` version of rust
+    + It should also build using the nightly rust
+    + Try it out with
+    ```sh
+    rustup toolchain install nightly
+    rustup run nightly cargo build
+    ```
+  1. Verify your installations
+    + Verson manager: `rustup -V`
+    + Package manager: `cargo -V`
+    + Compiler: `rustc -V`
+- Rust Formatter: `rustfmt`
+  1. `cargo install rustfmt`
+  1. `cargo fmt`
 
 ## Building and Running
 
-`cargo run`
+To build do:
+
+```sh
+cargo build
+```
+
+To build and run do:
+
+```sh
+cargo run
+```
+
+To run unit tests do:
+
+```sh
+cargo test
+```
 
 ## Contributing
 
-`rustfmt` is mandatory!
-
-```sh
-cargo install rustfmt
-cargo fmt
-```
+1. Fork the repo
+1. Code the things
+1. Log the things
+1. Writes tests for the things
+1. Run `cargo fmt` to make it pretty
+1. Run `cargo test` and pass all the tests
+1. Push it. Push it real good.
+1. Submit a PR
+1. ?????
+1. Contribution!
 
 [rustup]: https://www.rustup.rs/

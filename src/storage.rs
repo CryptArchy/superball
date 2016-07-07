@@ -14,6 +14,7 @@ pub struct KeyValue {
     pub key: String,
     pub value: String,
     pub dt_created: Timespec,
+    pub dt_modified: Timespec,
 }
 
 pub struct Storage {
@@ -39,15 +40,15 @@ impl Storage {
                     key: row.get("key"),
                     value: row.get("value"),
                     dt_created: row.get("dt_created"),
+                    dt_modified: row.get("dt_modified"),
                 }
             })
             .unwrap()
     }
 
-    // @todo: UPDATE still isn't working right, no idea why not!
     pub fn set(&self, kv: &KeyValue) {
         self.db
-            .execute(SET_KEYVALUE, &[&kv.key, &kv.value, &kv.dt_created])
+            .execute(SET_KEYVALUE, &[&kv.key, &kv.value])
             .unwrap();
     }
 }
@@ -59,6 +60,8 @@ mod tests {
 
     use rusqlite::Connection;
     use std::fs;
+    use std::thread::sleep;
+    use std::time::Duration;
     use storage::{Storage, KeyValue};
 
     #[test]
@@ -70,12 +73,14 @@ mod tests {
             key: "Testing".to_string(),
             value: "Testing".to_string(),
             dt_created: time::get_time(),
+            dt_modified: time::get_time(),
         };
         let kv2 = KeyValue {
             id: 0,
             key: "Tested".to_string(),
             value: "Rested".to_string(),
             dt_created: time::get_time(),
+            dt_modified: time::get_time(),
         };
         store.set(&kv1);
         store.set(&kv2);
@@ -102,11 +107,16 @@ mod tests {
         assert!(kv1_out.key != kv2_out.key);
         assert!(kv1_out.value != kv2_out.value);
 
-        let kv1r =  KeyValue {
+        // must take at least a second between sql calls
+        // or else the modified times won't be different
+        sleep(Duration::from_secs(2));
+
+        let kv1r = KeyValue {
             id: 1,
             key: "Testing".to_string(),
             value: "Resting".to_string(),
             dt_created: time::get_time(),
+            dt_modified: time::get_time(),
         };
 
         store.set(&kv1r);
@@ -116,10 +126,12 @@ mod tests {
         assert!(kv1r.id == kv1r_out.id, "Revised ID not transferred!");
         assert!(kv1r.key == kv1r_out.key, "Revised Key not transferred!");
         assert_eq!(kv1r.value, kv1r_out.value);
-        assert!(kv1r.value == kv1r_out.value, "Revised value not transferred!");
+        assert!(kv1r.value == kv1r_out.value,
+                "Revised value not transferred!");
         assert!(kv1.key == kv1r_out.key, "Revised key not same!");
         assert!(kv1.value != kv1r_out.value, "Revised value was same!");
-        assert!(kv1r.dt_created.sec != kv1r_out.dt_created.sec, "Revised time was same!");
+        assert!(kv1r.dt_created.sec != kv1r_out.dt_created.sec,
+                "Revised time was same!");
 
         fs::remove_file("test.db");
     }
@@ -132,7 +144,8 @@ mod tests {
             id           INTEGER PRIMARY KEY,
             key          TEXT NOT NULL,
             value        TEXT NOT NULL,
-            dt_created   TEXT NOT NULL
+            dt_created   TEXT NOT NULL,
+            dt_modified  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )",
                      &[])
             .unwrap();
@@ -142,6 +155,7 @@ mod tests {
             key: "Testing".to_string(),
             value: "Testing".to_string(),
             dt_created: time::get_time(),
+            dt_modified: time::get_time(),
         };
 
         conn.execute("INSERT INTO keyvalue (key, value, dt_created)
@@ -149,13 +163,15 @@ mod tests {
                      &[&kv.key, &kv.value, &kv.dt_created])
             .unwrap();
 
-        let mut stmt = conn.prepare("SELECT id, key, value, dt_created FROM keyvalue").unwrap();
+        let mut stmt = conn.prepare("SELECT id, key, value, dt_created, dt_modified FROM keyvalue")
+            .unwrap();
         let kv_iter = stmt.query_map(&[], |row| {
                 KeyValue {
                     id: row.get(0),
                     key: row.get(1),
                     value: row.get(2),
                     dt_created: row.get(3),
+                    dt_modified: row.get(4),
                 }
             })
             .unwrap();
