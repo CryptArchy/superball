@@ -3,3 +3,5 @@ logs/
 .vscode/
 Cargo.lock
 *.db
+superball.dot
+superball.png

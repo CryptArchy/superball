@@ -6,6 +6,7 @@ extern crate version;
 extern crate log;
 extern crate log4rs;
 extern crate iron;
+extern crate handlebars_iron as hbs;
 extern crate rusqlite;
 extern crate router;
 extern crate time;
@@ -13,9 +14,23 @@ extern crate urlencoded;
 
 use iron::prelude::*;
 use router::Router;
+use hbs::{Template, HandlebarsEngine, DirectorySource, MemorySource};
+use std::error::Error;
 
 mod handlers;
 mod storage;
+
+//#![cfg_attr(all(feature="serde_type"), feature(custom_derive, plugin))]
+//#![cfg_attr(all(feature="serde_type"), plugin(serde_macros))]
+
+//#[cfg(not(feature = "serde_type"))]
+//extern crate rustc_serialize;
+//#[cfg(feature = "serde_type")]
+//extern crate serde;
+//#[cfg(feature = "serde_type")]
+//extern crate serde_json;
+//#[macro_use]
+//extern crate maplit;
 
 fn main() {
     log4rs::init_file("log4rs.toml", Default::default()).unwrap();
@@ -23,11 +38,27 @@ fn main() {
     println!("Superball v{}", ver);
 
     let mut router = Router::new();
-    router.get("/", handlers::home);
-    router.get("/:query", handlers::echo);
-    router.get("/bounce", handlers::bounce);
+    router.get("/", handlers::home, "root");
+    router.get("/:query", handlers::echo, "echo");
+    router.get("/bounce", handlers::bounce, "bounce");
+    //router.post("/session", handlers::session::create);
+    router.get("/session", handlers::session::index, "session");
+    router.get("/session/test", handlers::session::get, "session/test");
 
-    Iron::new(router).http("localhost:3030").unwrap();
+    // HandlebarsEngine will look up all files with "./pub/templates/**/*.hbs"
+    let mut hbse = HandlebarsEngine::new();
+    hbse.add(Box::new(DirectorySource::new("./pub/templates/", ".hbs")));
+
+    // load templates from all registered sources
+    if let Err(r) = hbse.reload() {
+        panic!("{}", r.description());
+    }
+
+    let mut chain = Chain::new(router);
+
+    chain.link_after(hbse);
+
+    Iron::new(chain).http("localhost:3030").unwrap();
 }
 
 #[cfg(test)]
