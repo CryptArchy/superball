@@ -8,7 +8,10 @@
 </head>
 <body>
     <h1>{{title}}</h1>
-    <div>
-    </div>
+    <ul>
+    {{#each links}}
+        <li><a href="{{this.href}}">{{this.title}}</a>
+    {{/each}}
+    </ul>
 </body>
 </html>

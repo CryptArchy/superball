@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["CryptArchy <CodexArcanum@gmail.com>"]
 publish = false
 
+[features]
+default = ["rustc-serialize"]
+use_serde = ["serde", "serde_json", "serde_macros"]
+
 [dependencies]
 version = "2.0"
 log = "0.3"
@@ -11,9 +15,17 @@ log4rs = { version = "0.4", features = ["toml"] }
 iron = "*"
 router = "*"
 urlencoded = "*"
-handlebars-iron = "*"
+# handlebars-iron = { version = "*", features = ["serde_type"] }
+handlebars-iron = { version = "*" }
 rusqlite = "0.7.3"
 time = "0.1.35"
+plugin = "^0.2.6"
+maplit = "^0.1.3"
+rustc-serialize = { version = "*", optional = true }
+serde = { version = "0.8", optional = true }
+serde_json = { version = "0.8", optional = true } #for examples and stable compiler builds
+serde_macros = { version = "0.8", optional = true }
+serde_codegen = { version = "0.8", optional = true }
 
 [dependencies.params]
 git = "https://github.com/iron/params.git"

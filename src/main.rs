@@ -1,4 +1,6 @@
 #![feature(slice_patterns)]
+#![cfg_attr(all(feature="serde_type"), feature(custom_derive, plugin))]
+#![cfg_attr(all(feature="serde_type"), plugin(serde_macros))]
 
 #[macro_use]
 extern crate version;
@@ -11,6 +13,14 @@ extern crate rusqlite;
 extern crate router;
 extern crate time;
 extern crate urlencoded;
+#[cfg(not(feature = "serde_type"))]
+extern crate rustc_serialize;
+#[cfg(feature = "serde_type")]
+extern crate serde;
+#[cfg(feature = "serde_type")]
+extern crate serde_json;
+#[macro_use]
+extern crate maplit;
 
 use iron::prelude::*;
 use router::Router;
@@ -19,18 +29,6 @@ use std::error::Error;
 
 mod handlers;
 mod storage;
-
-//#![cfg_attr(all(feature="serde_type"), feature(custom_derive, plugin))]
-//#![cfg_attr(all(feature="serde_type"), plugin(serde_macros))]
-
-//#[cfg(not(feature = "serde_type"))]
-//extern crate rustc_serialize;
-//#[cfg(feature = "serde_type")]
-//extern crate serde;
-//#[cfg(feature = "serde_type")]
-//extern crate serde_json;
-//#[macro_use]
-//extern crate maplit;
 
 fn main() {
     log4rs::init_file("log4rs.toml", Default::default()).unwrap();
@@ -41,9 +39,9 @@ fn main() {
     router.get("/", handlers::home, "root");
     router.get("/:query", handlers::echo, "echo");
     router.get("/bounce", handlers::bounce, "bounce");
-    //router.post("/session", handlers::session::create);
     router.get("/session", handlers::session::index, "session");
-    router.get("/session/test", handlers::session::get, "session/test");
+    router.get("/session/test", handlers::session::test, "session/test");
+    router.post("/session", handlers::session::create, "session:post");
 
     // HandlebarsEngine will look up all files with "./pub/templates/**/*.hbs"
     let mut hbse = HandlebarsEngine::new();
@@ -59,30 +57,4 @@ fn main() {
     chain.link_after(hbse);
 
     Iron::new(chain).http("localhost:3030").unwrap();
-}
-
-#[cfg(test)]
-mod tests {
-    use iron::Url;
-    use std::collections::HashMap;
-
-    #[test]
-    fn parse_url() {
-        // Don't do it this way, the urlencoded crate basically does this for you.
-        let init_url = Url::parse("http://wwww.google.com?id=1&name=foo").unwrap();
-        let ref raw_query = init_url.query.unwrap();
-        let qparts: Vec<&str> = raw_query.split('&').collect();
-
-        assert_eq!(qparts[0], "id=1");
-        assert_eq!(qparts[1], "name=foo");
-
-        let mut query = HashMap::new();
-        for qp in qparts {
-            let kv: Vec<&str> = qp.split('=').collect();
-            query.insert(kv[0], kv[1]);
-        }
-
-        assert_eq!(query["id"], "1");
-        assert_eq!(query["name"], "foo");
-    }
 }
