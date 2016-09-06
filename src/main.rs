@@ -34,6 +34,7 @@ fn main() {
     log4rs::init_file("log4rs.toml", Default::default()).unwrap();
     let ver: version::Version = std::str::FromStr::from_str(version!()).unwrap();
     println!("Superball v{}", ver);
+    info!("Superball v{}", ver);
 
     let mut router = Router::new();
     router.get("/", handlers::home, "root");
@@ -56,5 +57,5 @@ fn main() {
 
     chain.link_after(hbse);
 
-    Iron::new(chain).http("localhost:3030").unwrap();
+    Iron::new(chain).http("0.0.0.0:80").unwrap();
 }
