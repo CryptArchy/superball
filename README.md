@@ -45,7 +45,7 @@ The Docker method to build uses Fletcher Nichol's excellent [Docker containers f
     ```
 1. Build the Superball! container
     ```sh
-    docker build --tag='superball:vX.Y.Z' .
+    docker build --tag='superball:X.Y.Z' .
     ```
 1. Edit `docker-compose.yml` to point to the correct version of Superball! that you just built
 1. Run Superball! from its container!

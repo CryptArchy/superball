@@ -5,3 +5,8 @@ Cargo.lock
 *.db
 superball.dot
 superball.png
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

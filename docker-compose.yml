@@ -1,4 +1,4 @@
 superball:
-  image: superball:v1
+  image: superball:0.1.0
   ports:
-    - "8080:8080"
+    - "8080:80"
